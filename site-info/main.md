@@ -5,5 +5,8 @@
 
 
 # 依赖项目
-* [lodash](https://github.com/lodash/lodash)
 * [vue](https://www.vuejs.com/#/)
+* [vue-router](https://github.com/vuejs/vue-router#readme)
+* [vue-resource](https://github.com/pagekit/vue-resource#readme)
+* [lodash](https://github.com/lodash/lodash)
+* [marked](https://github.com/chjj/marked)
