@@ -26,13 +26,17 @@ plugin可以将webpack引擎的全部潜力暴露给第三方开发者。通过*
 
 开发者通过实现plugin原型链上的apply方法使其变成可实例化的对象。当webpack安装插件时，webpack compiler就会调用apply方法。apply将会得到一个当下compiler的参考对象。一个简单的plugin的结构如下所示：
 
+#### 例子1
+
+*./hello-world.js*
+
 ```javascript
 function HelloWorldPlugin(options) {
   // 通过options设置plugin实例
 }
 
 HelloWorldPlugin.prototype.apply = function(compiler) {
-  compiler.plugin('done', function() {
+  compiler.plugin('done', function(satas) {//一切完成后的构建回调
     console.log('Hello World!'); 
   });
 };
@@ -40,10 +44,63 @@ HelloWorldPlugin.prototype.apply = function(compiler) {
 module.exports = HelloWorldPlugin;
 ```
 
+接下来只需要在webpack.config中的plugins里引入上面plugin的实例化对象即可。
+
+*./webpack.config.js*
+
+```javascript
+var HelloWorldPlugin = require('hello-world');
+
+var webpackConfig = {
+  // ... config settings here ...
+  plugins: [
+    new HelloWorldPlugin({options: true})
+  ]
+};
+```
+
+*./hello-world.js*中，有一个名为"done"的构建回调，所有任务完成后它将被触发。实际上该构建回调还有个参数——Stats，其中记录了最终版的compilation、hash、startTime、endTime信息。
+
+#### 例子2
+
+接下来让我们利用compilation为输出资源添加结果。该例子将设计一个plugin用于生成一个份编译结果清单，文件名为filelist.md。
+
+*./file-list-plugin*
+```javascript
+function FileListPlugin(options) {}
+
+FileListPlugin.prototype.apply = function(compiler) {
+  compiler.plugin('emit', function(compilation, callback) {
+    // 为生成文件添加头信息:
+    var filelist = 'In this build:\n\n';
+
+    // 遍历所有的已编译资源,
+    // 并将每个资源文件列为一行.
+    for (var filename in compilation.assets) {
+      filelist += ('- '+ filename +'\n');
+    }
+    
+    //将这份表单作为一个新的文件资源插入webpack构建:
+    compilation.assets['filelist.md'] = {
+      source: function() {
+        return filelist;
+      },
+      size: function() {
+        return filelist.length;
+      }
+    };
+
+    callback();
+  });
+};
+
+module.exports = FileListPlugin;
+```
+
+构建回调"emit"在compiler产生(emit)生成资源前被触发。此时插件将有最后的机会添加资源文件到compilation.assets中。
+
 [原文链接](https://github.com/webpack/docs/wiki/How-to-write-a-plugin#compiler-and-compilation)
 
 ### 二、webpack生命周期
 
-### 三、收集原材料！
-
-### 四、处理输出结果
+### 三、编写replace-webpack-plugin
