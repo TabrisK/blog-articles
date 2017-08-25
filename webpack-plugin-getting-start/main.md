@@ -2,7 +2,7 @@
 
 [直奔主题](#main)
 
-公司开发的微信公众号Webapp一直都存在缓存问题。但因为本公众号的服务号性质，使用者并不多，且版本迭代较慢等原因，一直没有重视。
+公司开发的微信公众号Webapp一直都存在缓存问题。但因为公众号的服务号性质，使用者并不多，且版本迭代较慢等原因，一直没有重视。
 
 近期用户数开始增多，版本迭代也开始加速，该问题变得越来越明显。新特性无法即刻呈现、旧BUG无法及时清除，着实恼人。为了保住饭碗不被饿死，我决定揪出问题原因，一劳永逸解决它。
 
@@ -61,9 +61,9 @@ var webpackConfig = {
 
 *./hello-world.js*中，有一个名为"done"的构建回调，所有任务完成后它将被触发。实际上该构建回调还有个参数——Stats，其中记录了最终版的compilation、hash、startTime、endTime信息。
 
-#### 例子2
+#### <a name="e2"></a>例子2
 
-接下来让我们利用compilation为输出资源添加结果。该例子将设计一个plugin用于生成一个份编译结果清单，文件名为filelist.md。
+接下来让我们利用compilation为输出资源添加结果。该例子将设计一个plugin用于生成一份编译结果清单，文件名为filelist.md。
 
 *./file-list-plugin*
 ```javascript
@@ -97,10 +97,48 @@ FileListPlugin.prototype.apply = function(compiler) {
 module.exports = FileListPlugin;
 ```
 
-构建回调"emit"在compiler产生(emit)生成资源前被触发。此时插件将有最后的机会添加资源文件到compilation.assets中。
+构建回调"emit"在compiler产生(emit)生成资源前被触发。此时插件将有最后的机会添加资源文件到compilation.assets中。你可以在[这里](https://webpack.js.org/api/plugins/compiler/#event-hooks)了解compiler一共提供了哪些构建回调。
 
 [原文链接](https://github.com/webpack/docs/wiki/How-to-write-a-plugin#compiler-and-compilation)
 
-### 二、webpack生命周期
+### 二、编写replace-webpack-plugin
 
-### 三、编写replace-webpack-plugin
+本插件和[例子2](#e2)一样在emit构建回调中进行相关逻辑的处理。
+
+```javascript
+let opts = {};
+
+function replaceWebpackPlugin(options) {
+    opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+}
+
+replaceWebpackPlugin.prototype.apply = function (compiler) {
+
+    compiler.plugin("emit", function (compilation, cb) {
+            let allHash = "";//用于记录所有资源hash
+            compilation.chunks.forEach(chunk => {//迭代所有chunk
+                allHash += chunk.hash;//记录每个chunk的hash
+            });
+    
+            //allHash过长，故对其再次进行md5计算，缩短长度
+            allHash = md5(allHash);
+    
+            //读取需要替换内容的模板
+            let template = fs.readFileSync(opts.template, {
+                encoding: "utf8"
+            });
+            //替换模板中的"___fv___"
+            template = template.replace("___fv___", allHash);
+            //将替换成功后的新模板插入webpack构建:
+            compilation.assets['index.html'] = {
+                source: function() {
+                    return template;
+                },
+                size: function() {
+                    return template.length;
+                }
+            };
+            cb();
+        });
+}
+```
