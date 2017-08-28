@@ -10,3 +10,4 @@
 * [vue-resource](https://github.com/pagekit/vue-resource#readme)
 * [lodash](https://github.com/lodash/lodash)
 * [marked](https://github.com/chjj/marked)
+* [code-prettify](https://github.com/google/code-prettify)
