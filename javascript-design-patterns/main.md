@@ -1,6 +1,6 @@
 #### 1. 单例模式
 - 定义：保证一个类仅有一个实例，并提供一个访问它的全局访问点。
-1. 代理单例模式
+1.1 代理单例模式
 根据已有类，派生出一个用于生成单例的类。该派生类不论经过几次实例化，都只会返回最初的那个实例化对象。
 ``` javascript
 var CreateDiv = function(html){//原始类
@@ -26,7 +26,7 @@ var b = new ProxySingletonCreateDiv("Helex2");
 console.log(a === b);//true
 console.log(a.html);//Helex1
 ```
-2. 惰性单例模式
+1.2 惰性单例模式
 在需要时才创建对象实例。
 ```javascript
 var getSingle = function(fn){
