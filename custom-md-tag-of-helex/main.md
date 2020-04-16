@@ -6,9 +6,9 @@ Markdown 本身没有提供嵌入网页的相关语法。当文章作者希望�
 
 在 Markdown 中插入如下内容
 
-\```iframe
-https://www.baidu.com
-\```
+\`\`\`iframe<br>
+ht<span>tps://ww</span>w.baidu.com<br>
+\`\`\`
 
 即可在本博客渲染出目标页面
 
